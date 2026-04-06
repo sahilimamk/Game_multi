@@ -2,13 +2,10 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 
-    function resize(){
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     }
-
-
-
     
     function draw() {
         ctx.fillStyle = Theme.colors.background;
@@ -68,4 +65,15 @@ const ctx = canvas.getContext("2d");
                 Theme.sizes.tile
             );
         }
+        ctx.fillStyle = "white"; // Or use Theme.colors.player1
+ctx.font = "20px Arial";
+
+// Draw Player 1's score on the top left
+ctx.fillText("P1 Score: " + player.score, 20, 30);
+
+// Draw Player 2's score on the top right
+// (Assuming your canvas is something like 800px wide, adjust the X coordinate if needed)
+ctx.fillText("P2 Score: " + player2.score, 600, 30);
     }
+
+    

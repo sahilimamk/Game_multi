@@ -12,3 +12,11 @@ const Theme = {
         bullet: "#f57e00e8"
     }
 };
+
+const rows = 100;
+const cols = 100;
+const GRASS = 0;
+const WATER = 1;
+const SOIL = 2;
+const map = [];
+    

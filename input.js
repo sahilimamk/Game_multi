@@ -12,17 +12,6 @@ window.addEventListener("keydown", (e) => {
     if (gameKeys.includes(key)) {
         e.preventDefault();
     }
-    if(key === " "){
-        const bullet = {
-            px: player.px,
-            py: player.py,
-            color : Theme.colors.bullet,
-            isbullet: true,
-            speedX: 1.5 * player.lastDirX,
-            speedY: 1.5 * player.lastDirY
-        }
-        entities.push(bullet);
-    }
     keys[key] = true;
 });
 
