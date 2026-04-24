@@ -6,7 +6,7 @@ for (let y = 0; y < rows; y++) {
         }
     }
 
-    const player = {
+    const player1 = {
         controls: { 
             up: "w", 
             down: "s", 
@@ -48,11 +48,11 @@ for (let y = 0; y < rows; y++) {
         color: Theme.colors.player2
     };
 
-    const entities = [player, player2];
+    const entities = [player1, player2];
 
     const keys = {};
 
-
+    let serverBullets = [];
 
 //create a patch of soil or water in the map like a cricle 
     function createPatch(cx, cy, radius, type) {
@@ -77,27 +77,37 @@ for (let y = 0; y < rows; y++) {
 
 
 // renders the whole game
-    function gameloop(){
-        updatePlayer(player);
-        updatePlayer(player2);
-        updateBullets();
-        draw();
-        requestAnimationFrame(gameloop);
-    }
+function gameloop(){
+    handleClientInput(player1, keys, player2, map, rows, cols);
+    handleClientInput(player2, keys, player1, map, rows, cols);
+    draw();
+    requestAnimationFrame(gameloop);
+}
 
     console.log(keys);
 
 //websocket connection to connect to server
     const socket = new WebSocket("ws://localhost:3000");
 
-    socket.addEventListener('message',(e) => {
+socket.addEventListener('message',(e) => {
         const state = JSON.parse(e.data.toString());
+        
+console.log("state.bullets:", state.bullets);
 
-        player.px = state.player1.px;
-        player.py = state.player1.py;
+        player1.px = state.player1.px;
+        player1.py = state.player1.py;
         player2.px = state.player2.px;
         player2.py = state.player2.py;
 
+
+        player1.score = state.player1.score;
+        player2.score = state.player2.score;
+
+   entities.length = 2; // keep player and player2, wipe old bullets
+for (const b of state.bullets) {
+    b.color = b.owner === "player1" ? Theme.colors.player1 : Theme.colors.player2;
+    entities.push(b);
+}
     });
     
     window.onload = () => {

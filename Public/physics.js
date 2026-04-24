@@ -1,28 +1,14 @@
 
-console.log("Map initialized:", map);
-
-function canMove(x, y) {
+function canMove(x, y, map) {
     return (map[y][x] !== WATER && map[y][x] !== SOIL);
 }
 
-function updatePlayer(p) {
+// SHARED — works on both client and server
+function applyMovement(p, dirX, dirY, target, map, rows, cols) {
+
     let newX = p.px;
     let newY = p.py;
-    let dirX = 0;
-    let dirY = 0;
-
-    // 2. Identify the Enemy
-    let target;
-    if (p.id === "player1") {
-        target = player2;
-    } else {
-        target = player; // This is Player 1
-    }
-
-    if (keys[p.controls.up]) dirY -= p.speed;
-    if (keys[p.controls.down]) dirY += p.speed;
-    if (keys[p.controls.left]) dirX -= p.speed;
-    if (keys[p.controls.right]) dirX += p.speed;
+ 
 
     if (dirX !== 0 || dirY !== 0) {
         p.lastDirX = dirX;
@@ -38,32 +24,55 @@ function updatePlayer(p) {
         py: newY,
         width: p.width,
         height: p.height
+
     };
 
     // to check for the exact coordinate on the map
     let gridX = Math.floor(newX);
     let gridY = Math.floor(newY);
 
-    if (
-        gridY >= 0 && gridY < rows &&
-        gridX >= 0 && gridX < cols &&
-        canMove(gridX, gridY) &&
-        !checkAABB(ghost, target)
-    ) {
-        p.px = newX;
-        p.py = newY;
+    // When map is null (server-side), skip tile/bounds checks
+    let tileOk = true;
+    if (map && rows != null && cols != null) {
+        tileOk = gridY >= 0 && gridY < rows &&
+                 gridX >= 0 && gridX < cols &&
+                 canMove(gridX, gridY, map);
     }
 
-    // creates a bullet and pushes in to entity and checks if bullet is not in cooldown
-    if (keys[p.controls.shoot] && p.currentCdown === 0) {
-        entities.push(createBullet(p.px, p.py, p.lastDirX, p.lastDirY, p.id));
-        p.currentCdown = p.fireRate;
+    if (tileOk && !checkAABB(ghost, target)) {
+        p.px = newX;
+        p.py = newY;
     }
 
     // to slow down the pushing of bullet and current cool down 
     if (p.currentCdown > 0) {
         p.currentCdown--;
     }
+}
+
+// CLIENT ONLY — reads keyboard, calls shared function
+function handleClientInput(p, keys, target, map, rows, cols) {
+    let dirX = 0, dirY = 0;
+    if (keys[p.controls.up]) dirY -= p.speed;
+    if (keys[p.controls.down]) dirY += p.speed;
+    if (keys[p.controls.left]) dirX -= p.speed;
+    if (keys[p.controls.right]) dirX += p.speed;
+
+    applyMovement(p, dirX, dirY, target, map, rows, cols);
+}
+
+
+function createBullet(startX, startY, dirX, dirY, ownerID){
+        return {
+            width: 0.1,
+            height: 0.1,
+            px: startX,
+            py: startY,
+            isbullet: true,
+            speedX: 1.5 * dirX,
+            speedY: 1.5 * dirY,
+            owner: ownerID
+        };
 }
 
 function checkAABB(boxA, boxB) {
@@ -80,21 +89,26 @@ function checkAABB(boxA, boxB) {
 }
 
 // physics for bullet
-function updateBullets() {
-    for (let i = 0; i < entities.length; i++) {
-        let crnent = entities[i];
-        
-        if (crnent.isbullet) {
+function updateBullets(bullets, player1, player2){
+        for (let i = 0; i < bullets.length; i++) {
+        let crnent = bullets[i];
+    
             crnent.px += crnent.speedX;
             crnent.py += crnent.speedY;
-        }
+        
         
         if (crnent.owner === "player1" && checkAABB(crnent, player2)) {
-            player.score++;       // Give Player 1 a point!
+            player1.score++;       // Give Player 1 a point!
             crnent.dead = true;   // Kill the bullet
-        } else if (crnent.owner === "player2" && checkAABB(crnent, player)) {
+        } else if (crnent.owner === "player2" && checkAABB(crnent, player1)) {
             player2.score++;      // Give Player 2 a point!
             crnent.dead = true;   // Kill the bullet
         }
     }
+}
+
+if(typeof module !== "undefined"){
+    module.exports = {
+        checkAABB, 
+        createBullet, applyMovement, updateBullets, canMove}
 }
