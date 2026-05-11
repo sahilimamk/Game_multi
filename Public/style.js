@@ -1,6 +1,6 @@
 const Theme = {
     sizes: {
-        tile: 58
+        tile: 50 
     },
     colors: {
         background: "#e3f2fd", 
@@ -21,4 +21,22 @@ const GRASS = 0;
 const WATER = 1;
 const SOIL = 2;
 const map = [];
+
+
+
+    /*
+const spriteAnimations = {
+    idle: {
+        width: 35,
+        height: 32,
+        loc: [
+            { x: 0, y:0},
+            { x: 35, y:0},
+            { x: 70, y:0},
+            { x: 105, y:0}
+        ]
+    },
+    left: {}
+}
+*/
     
