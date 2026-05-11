@@ -47,7 +47,7 @@ animationStates.forEach((state, index) => {
         loc: [],
     }
 
-    for(let j = 0; j < state.frames; j++){
+    for(let j = 0; j < state.frame; j++){
         let posX = j * s2Width;
         let posY = index * s2Height;
 
